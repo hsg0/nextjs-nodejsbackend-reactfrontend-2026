@@ -4,6 +4,7 @@
 import React, { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import callBackend from "@/lib/callBackend";
 
 function SkullFireMark({ className = "" }) {
   return (
@@ -47,15 +48,40 @@ export default function Day18EntryPage() {
     console.log("[Day18Entry] Mounted. useParams():", params);
   }, [params]);
 
-  const enterForge = () => {
-    const adprepare = makeAdPrepareId();
-    console.log("[Day18Entry] Creating session:", adprepare);
+  const enterForge = async () => {
+    try {
+      console.log("[Day18Entry] Fetching userId from backend...");
 
-    toast.success("🔥 Forge created! Entering Day 18...", {
-      toastId: "day18-enter",
-    });
+      const res = await callBackend.get("/web/api/day18/get-day18-data");
+      console.log("[Day18Entry] entrypoint response:", res.data);
 
-    router.push(`/dashboard/day18/${adprepare}`);
+      const userId = res?.data?.userId;
+
+      if (!userId) {
+        toast.error("❌ Could not get userId. Are you logged in?", {
+          toastId: "day18-userid-missing",
+        });
+        return;
+      }
+
+      const adprepare = makeAdPrepareId();
+      const session = `${userId}__${adprepare}`; // ✅ embed userId into session
+
+      toast.success("🔥 Forge created! Entering Day 18...", {
+        toastId: "day18-enter",
+      });
+
+      console.log("[Day18Entry] Navigating to:", `/dashboard/day18/${session}`);
+      router.push(`/dashboard/day18/${session}`);
+    } catch (err) {
+      console.log("[Day18Entry] Failed to fetch userId:", err?.message || err);
+
+      toast.error("❌ Auth failed. Please login again.", {
+        toastId: "day18-auth-fail",
+      });
+
+      router.push("/login");
+    }
   };
 
   const viewProducts = () => {
