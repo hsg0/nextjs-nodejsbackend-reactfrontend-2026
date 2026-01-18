@@ -1,7 +1,7 @@
 // nextjs-reactjs-practice-2026/backend/routes/day18routes/day18Routes.js
 import express from 'express';
 import { protect } from '../../middleware/authMiddleware.js';
-import { getDay18Data, setDay18Data } from '../../controllers/day18Controller.js';
+import { getDay18Data, setDay18Data } from '../../controllers/day18controllers/day18Controller.js';
 
 const day18Router = express.Router();
 
