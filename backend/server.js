@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import authRouter from './routes/authRoutes.js';
 import userDataRouter from './routes/userDataRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import day18Router from './routes/day18routes/day18Routes.js';
 // import day76AIRouter from './routes/day76routes/day76AIRoutes.js';
 // Load environment variables
 dotenv.config();
@@ -62,6 +63,7 @@ app.use('/web/api/data', userDataRouter);
 app.use('/web/api/users', userRouter);
 
 // rotes based on days
+app.use('/web/api/day18', day18Router);
 // app.use('/web/api/dayAI76', day76AIRouter);
 
 app.listen(PORT, () => {
