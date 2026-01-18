@@ -1,0 +1,61 @@
+// components/trash/50users.js
+
+const USERS_50 = [
+    { id: 1, name: "Aiden Carter", email: "aiden.carter@example.com", phone: "+1 (604) 555-0101" },
+    { id: 2, name: "Maya Singh", email: "maya.singh@example.com", phone: "+1 (604) 555-0102" },
+    { id: 3, name: "Liam Bennett", email: "liam.bennett@example.com", phone: "+1 (604) 555-0103" },
+    { id: 4, name: "Sofia Ramirez", email: "sofia.ramirez@example.com", phone: "+1 (604) 555-0104" },
+    { id: 5, name: "Noah Kim", email: "noah.kim@example.com", phone: "+1 (604) 555-0105" },
+    { id: 6, name: "Olivia Martin", email: "olivia.martin@example.com", phone: "+1 (604) 555-0106" },
+    { id: 7, name: "Ethan Brooks", email: "ethan.brooks@example.com", phone: "+1 (604) 555-0107" },
+    { id: 8, name: "Ava Patel", email: "ava.patel@example.com", phone: "+1 (604) 555-0108" },
+    { id: 9, name: "Lucas Turner", email: "lucas.turner@example.com", phone: "+1 (604) 555-0109" },
+    { id: 10, name: "Isabella Chen", email: "isabella.chen@example.com", phone: "+1 (604) 555-0110" },
+  
+    { id: 11, name: "Jackson Lewis", email: "jackson.lewis@example.com", phone: "+1 (604) 555-0111" },
+    { id: 12, name: "Amelia Johnson", email: "amelia.johnson@example.com", phone: "+1 (604) 555-0112" },
+    { id: 13, name: "Benjamin Scott", email: "benjamin.scott@example.com", phone: "+1 (604) 555-0113" },
+    { id: 14, name: "Charlotte Davis", email: "charlotte.davis@example.com", phone: "+1 (604) 555-0114" },
+    { id: 15, name: "Henry Wilson", email: "henry.wilson@example.com", phone: "+1 (604) 555-0115" },
+    { id: 16, name: "Emily Parker", email: "emily.parker@example.com", phone: "+1 (604) 555-0116" },
+    { id: 17, name: "Daniel Moore", email: "daniel.moore@example.com", phone: "+1 (604) 555-0117" },
+    { id: 18, name: "Harper Clark", email: "harper.clark@example.com", phone: "+1 (604) 555-0118" },
+    { id: 19, name: "Michael Nguyen", email: "michael.nguyen@example.com", phone: "+1 (604) 555-0119" },
+    { id: 20, name: "Evelyn Hall", email: "evelyn.hall@example.com", phone: "+1 (604) 555-0120" },
+  
+    { id: 21, name: "Sebastian Wright", email: "sebastian.wright@example.com", phone: "+1 (604) 555-0121" },
+    { id: 22, name: "Abigail Young", email: "abigail.young@example.com", phone: "+1 (604) 555-0122" },
+    { id: 23, name: "Logan King", email: "logan.king@example.com", phone: "+1 (604) 555-0123" },
+    { id: 24, name: "Ella Adams", email: "ella.adams@example.com", phone: "+1 (604) 555-0124" },
+    { id: 25, name: "Mateo Flores", email: "mateo.flores@example.com", phone: "+1 (604) 555-0125" },
+    { id: 26, name: "Grace Rivera", email: "grace.rivera@example.com", phone: "+1 (604) 555-0126" },
+    { id: 27, name: "Owen Hill", email: "owen.hill@example.com", phone: "+1 (604) 555-0127" },
+    { id: 28, name: "Chloe Baker", email: "chloe.baker@example.com", phone: "+1 (604) 555-0128" },
+    { id: 29, name: "Caleb Gonzalez", email: "caleb.gonzalez@example.com", phone: "+1 (604) 555-0129" },
+    { id: 30, name: "Lily Nelson", email: "lily.nelson@example.com", phone: "+1 (604) 555-0130" },
+  
+    { id: 31, name: "Wyatt Carter", email: "wyatt.carter@example.com", phone: "+1 (604) 555-0131" },
+    { id: 32, name: "Zoey Mitchell", email: "zoey.mitchell@example.com", phone: "+1 (604) 555-0132" },
+    { id: 33, name: "Isaac Roberts", email: "isaac.roberts@example.com", phone: "+1 (604) 555-0133" },
+    { id: 34, name: "Nora Hernandez", email: "nora.hernandez@example.com", phone: "+1 (604) 555-0134" },
+    { id: 35, name: "Julian Perez", email: "julian.perez@example.com", phone: "+1 (604) 555-0135" },
+    { id: 36, name: "Hannah Torres", email: "hannah.torres@example.com", phone: "+1 (604) 555-0136" },
+    { id: 37, name: "Leo Collins", email: "leo.collins@example.com", phone: "+1 (604) 555-0137" },
+    { id: 38, name: "Addison Stewart", email: "addison.stewart@example.com", phone: "+1 (604) 555-0138" },
+    { id: 39, name: "Nathan Morris", email: "nathan.morris@example.com", phone: "+1 (604) 555-0139" },
+    { id: 40, name: "Zara Rogers", email: "zara.rogers@example.com", phone: "+1 (604) 555-0140" },
+  
+    { id: 41, name: "David Reed", email: "david.reed@example.com", phone: "+1 (604) 555-0141" },
+    { id: 42, name: "Layla Cook", email: "layla.cook@example.com", phone: "+1 (604) 555-0142" },
+    { id: 43, name: "Andrew Morgan", email: "andrew.morgan@example.com", phone: "+1 (604) 555-0143" },
+    { id: 44, name: "Scarlett Bell", email: "scarlett.bell@example.com", phone: "+1 (604) 555-0144" },
+    { id: 45, name: "Joseph Murphy", email: "joseph.murphy@example.com", phone: "+1 (604) 555-0145" },
+    { id: 46, name: "Aria Bailey", email: "aria.bailey@example.com", phone: "+1 (604) 555-0146" },
+    { id: 47, name: "Samuel Price", email: "samuel.price@example.com", phone: "+1 (604) 555-0147" },
+    { id: 48, name: "Violet Howard", email: "violet.howard@example.com", phone: "+1 (604) 555-0148" },
+    { id: 49, name: "Cameron Ward", email: "cameron.ward@example.com", phone: "+1 (604) 555-0149" },
+    { id: 50, name: "Penelope Foster", email: "penelope.foster@example.com", phone: "+1 (604) 555-0150" },
+  ];
+  
+  export default USERS_50;
+  export { USERS_50 };
