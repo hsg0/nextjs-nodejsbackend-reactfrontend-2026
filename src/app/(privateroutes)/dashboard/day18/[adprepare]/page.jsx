@@ -304,62 +304,78 @@ export default function AdPreparePage() {
   };
 
   // Step 1: upload + save session
-  const forgeUpload = async () => {
-    try {
-      if (!productFile) return toast.error("Please add a product image (Step 1).", { toastId: "need-product" });
-      if (!actorFile) return toast.error("Please add an actor image (Step 2).", { toastId: "need-actor" });
-      if (!directions.trim()) return toast.error("Please add ad directions (Step 3).", { toastId: "need-directions" });
-      if (!actorWords.trim()) return toast.error("Please add actor words (Step 4).", { toastId: "need-words" });
+ // Step 1: upload + save session
+const forgeUpload = async () => {
+  try {
+    if (!productFile) return toast.error("Please add a product image (Step 1).", { toastId: "need-product" });
+    if (!actorFile) return toast.error("Please add an actor image (Step 2).", { toastId: "need-actor" });
+    if (!directions.trim()) return toast.error("Please add ad directions (Step 3).", { toastId: "need-directions" });
+    if (!actorWords.trim()) return toast.error("Please add actor words (Step 4).", { toastId: "need-words" });
 
-      setUploading(true);
-      setUploadedOk(false);
-      setCanGenerate(false);
-      setServerAdCreation("");
+    setUploading(true);
+    setUploadedOk(false);
+    setCanGenerate(false);
+    setServerAdCreation("");
 
-      toast.info("🔥 Step 1: Uploading & saving session…", { toastId: "step1-start" });
+    toast.info("🔥 Step 1: Uploading & saving session…", { toastId: "step1-start" });
 
-      const form = new FormData();
-      form.append("adprepare", parsed.raw);
-      form.append("email", email || "");
-      form.append("directions", directions);
-      form.append("actorWords", actorWords);
-      form.append("productImage", productFile);
-      form.append("actorImage", actorFile);
+    const form = new FormData();
+    form.append("adprepare", parsed.raw);
+    form.append("email", email || "");
+    form.append("directions", directions);
+    form.append("actorWords", actorWords);
+    form.append("productImage", productFile);
+    form.append("actorImage", actorFile);
 
-      const res = await callBackend.post("/web/api/day18/set-day18-data", form, {
-        headers: { "Content-Type": "multipart/form-data" },
+    const res = await callBackend.post("/web/api/day18/set-day18-data", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log("[AdPreparePage] step1 response:", res.data);
+
+    toast.success("✅ Step 1 complete. Preparing next step…", { toastId: "step1-ok" });
+    setUploadedOk(true);
+
+    // 5 second timer then enable Step 2
+    setNextCountdown(5);
+    setCanGenerate(false);
+
+    const interval = setInterval(() => {
+      setNextCountdown((prev) => {
+        const next = prev - 1;
+        if (next <= 0) {
+          clearInterval(interval);
+          setCanGenerate(true);
+          toast.info("✨ Step 2 unlocked: Generate Ad", { toastId: "step2-unlocked" });
+          return 0;
+        }
+        return next;
       });
+    }, 1000);
+  } catch (err) {
+    const data = err?.response?.data;
+    const status = err?.response?.status;
 
-      console.log("[AdPreparePage] step1 response:", res.data);
+    console.log("[AdPreparePage] step1 failed:", data || err?.message || err);
 
-      toast.success("✅ Step 1 complete. Preparing next step…", { toastId: "step1-ok" });
-      setUploadedOk(true);
+    // ✅ If session already exists, continue to it
+    if (status === 409 && data?.adcreation) {
+      toast.info("This session already exists — opening your existing ad…", { toastId: "exists" });
 
-      // 5 second timer then enable Step 2
-      setNextCountdown(5);
-      setCanGenerate(false);
+      const qp = new URLSearchParams();
+      if (email) qp.set("email", email);
 
-      const interval = setInterval(() => {
-        setNextCountdown((prev) => {
-          const next = prev - 1;
-          if (next <= 0) {
-            clearInterval(interval);
-            setCanGenerate(true);
-            toast.info("✨ Step 2 unlocked: Generate Ad", { toastId: "step2-unlocked" });
-            return 0;
-          }
-          return next;
-        });
-      }, 1000);
-    } catch (err) {
-      console.log("[AdPreparePage] step1 failed:", err?.response?.data || err?.message || err);
-      toast.error("❌ Step 1 failed. Check backend logs.", { toastId: "step1-fail" });
-      setUploadedOk(false);
-      setCanGenerate(false);
-    } finally {
-      setUploading(false);
+      router.push(`/dashboard/day18/${parsed.raw}/${data.adcreation}?${qp.toString()}`);
+      return;
     }
-  };
+
+    toast.error("❌ Step 1 failed. Check backend logs.", { toastId: "step1-fail" });
+    setUploadedOk(false);
+    setCanGenerate(false);
+  } finally {
+    setUploading(false);
+  }
+};
 
   // Step 2: trigger backend generation (backend creates adcreation)
   const triggerGenerate = async () => {
