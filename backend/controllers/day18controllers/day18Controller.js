@@ -132,6 +132,9 @@ async function runPipelineInBackground({ userId, adprepare }) {
     return;
   }
 
+  let outPath = "";
+  let tmpDir = "";
+
   try {
     // -------- Phase 1: plan (rule-based) --------
     const plan = ruleBasedPlan({
@@ -148,20 +151,28 @@ async function runPipelineInBackground({ userId, adprepare }) {
     await doc.save();
     console.log("[Day18][Pipeline] planned ✅");
 
+    // Check discard again (user could discard while planning)
+    const afterPlan = await Day18Model.findOne({ webUserId: String(userId), adprepare });
+    if (afterPlan?.status === "discarded") {
+      console.log("[Day18][Pipeline] Discarded after planning, stop.");
+      return;
+    }
+
     // -------- Phase 2: render (ffmpeg realistic fake) --------
     doc.status = "rendering";
     await doc.save();
     console.log("[Day18][Pipeline] rendering...");
 
-    const { outPath, tmpDir } = await buildAdVideo({
+    // ✅ THIS IS WHERE YOUR SNIPPET GOES
+    const built = await buildAdVideo({
       adcreation: doc.adcreation,
       productUrl: doc.productImage?.url,
       actorUrl: doc.actorImage?.url,
-      // If your buildAdVideo supports these later, you can pass them:
-      // shotList: doc.shotList,
-      // overlays: doc.overlays,
-      // captions: doc.captions,
+      // Later: shotList, captions, overlays when buildAdVideo supports them
     });
+
+    outPath = built.outPath;
+    tmpDir = built.tmpDir;
 
     const videoBuffer = fs.readFileSync(outPath);
 
@@ -170,6 +181,13 @@ async function runPipelineInBackground({ userId, adprepare }) {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     } catch (e) {
       console.log("[Day18][Video] tmp cleanup failed:", e?.message || e);
+    }
+
+    // Check discard again (user could discard while rendering)
+    const afterRender = await Day18Model.findOne({ webUserId: String(userId), adprepare });
+    if (afterRender?.status === "discarded") {
+      console.log("[Day18][Pipeline] Discarded after render, stop.");
+      return;
     }
 
     // -------- Phase 3: voice (optional) --------
@@ -218,8 +236,24 @@ async function runPipelineInBackground({ userId, adprepare }) {
     await doc.save();
 
     console.log("[Day18][Pipeline] ready ✅", doc.adVideo?.url);
+
+    // Optional: delete local out file so USB doesn’t fill up
+    try {
+      if (outPath && fs.existsSync(outPath)) fs.unlinkSync(outPath);
+    } catch (e) {
+      console.log("[Day18][Video] out cleanup failed:", e?.message || e);
+    }
   } catch (e) {
     console.log("[Day18][Pipeline] error:", e?.message || e);
+
+    // cleanup tmp/out if present
+    try {
+      if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {}
+    try {
+      if (outPath && fs.existsSync(outPath)) fs.unlinkSync(outPath);
+    } catch {}
+
     try {
       const fresh = await Day18Model.findOne({ webUserId: String(userId), adprepare });
       if (fresh && fresh.status !== "discarded") {
@@ -314,9 +348,12 @@ export const setDay18Data = async (req, res) => {
       if (!directions.trim()) return res.status(400).json({ success: false, message: "Missing directions" });
       if (!actorWords.trim()) return res.status(400).json({ success: false, message: "Missing actorWords" });
 
-      // If session exists and NOT discarded -> block
+      // If session exists and NOT resettable -> block
       const existing = await Day18Model.findOne({ webUserId: String(userId), adprepare });
-      if (existing && existing.status !== "discarded") {
+
+      const resettableStatuses = new Set(["discarded", "error"]);
+
+      if (existing && !resettableStatuses.has(String(existing.status || ""))) {
         return res.status(409).json({
           success: false,
           message: "This adprepare session already exists for this user.",
@@ -325,6 +362,10 @@ export const setDay18Data = async (req, res) => {
           status: existing.status || "",
         });
       }
+
+      // ✅ if we reach here:
+      // - no existing doc, OR
+      // - existing doc is discarded/error (so we are allowed to overwrite/reset it)
 
       console.log("[Day18] Uploading product to ImageKit...");
       const productUpload = await imagekit.upload({

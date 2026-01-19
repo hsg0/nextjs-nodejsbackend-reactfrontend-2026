@@ -1,12 +1,14 @@
 // backend/utils/day18utils/buildAdVideo.js
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { downloadFile } from "./downloadFile.js";
 import { runFfmpeg } from "./runFfmpeg.js";
 
 function day18Base() {
   // backend/day18folder/uploads/day18
-  return path.resolve(process.cwd(), "backend/day18folder/uploads/day18");
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(__dirname, "../../day18folder/uploads/day18");
 }
 
 function safeName(name) {

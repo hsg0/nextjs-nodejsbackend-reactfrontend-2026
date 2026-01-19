@@ -1,9 +1,11 @@
 import { spawn } from "child_process";
 import path from "path";
+import { fileURLToPath } from "url";
 
 export function getFfmpegPath() {
   // your project-local binary
-  return path.resolve(process.cwd(), "backend/ffmpeg/ffmpeg");
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(__dirname, "../../ffmpeg/ffmpeg");
 }
 
 export function runFfmpeg(args, { logPrefix = "[FFmpeg]" } = {}) {
