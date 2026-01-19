@@ -39,11 +39,6 @@ function SkullFireMark({ className = "" }) {
 /* ---------------- Helpers ---------------- */
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB
 
-function makeAdCreationId() {
-  const rand = Math.random().toString(36).slice(2, 7);
-  return `ad-${Date.now()}-${rand}`;
-}
-
 function bytesToMB(bytes) {
   return Math.round((bytes / (1024 * 1024)) * 100) / 100;
 }
@@ -136,16 +131,7 @@ async function compressImageToMax(file, maxBytes = MAX_BYTES) {
 }
 
 /* ---------------- DropZone ---------------- */
-function DropZone({
-  label,
-  hint,
-  file,
-  previewUrl,
-  onPick,
-  onClear,
-  inputRef,
-  accept = "image/*",
-}) {
+function DropZone({ label, hint, file, previewUrl, onPick, onClear, inputRef, accept = "image/*" }) {
   const [dragOver, setDragOver] = useState(false);
 
   return (
@@ -157,11 +143,7 @@ function DropZone({
         </div>
 
         {file ? (
-          <button
-            type="button"
-            onClick={onClear}
-            className="text-xs text-white/70 hover:text-white underline"
-          >
+          <button type="button" onClick={onClear} className="text-xs text-white/70 hover:text-white underline">
             Remove
           </button>
         ) : (
@@ -213,7 +195,6 @@ function DropZone({
           </div>
         ) : (
           <div className="flex items-center gap-4">
-            {/* preview */}
             <div className="h-16 w-16 rounded-2xl overflow-hidden ring-1 ring-white/10 bg-black/30 shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={previewUrl} alt="preview" className="h-full w-full object-cover" />
@@ -251,7 +232,6 @@ export default function AdPreparePage() {
 
   const adprepare = String(params?.adprepare || "");
   const parsed = useMemo(() => {
-    // If you embed userId like: userId__forge-...
     const parts = adprepare.split("__");
     return {
       raw: adprepare,
@@ -268,16 +248,18 @@ export default function AdPreparePage() {
   const [actorFile, setActorFile] = useState(null);
   const [directions, setDirections] = useState("");
   const [actorWords, setActorWords] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+
+  const [uploading, setUploading] = useState(false); // Step 1
+  const [uploadedOk, setUploadedOk] = useState(false); // Step 1 done
+  const [nextCountdown, setNextCountdown] = useState(0); // 5s
+  const [canGenerate, setCanGenerate] = useState(false); // Step 2 button enabled
+
+  const [generating, setGenerating] = useState(false); // Step 2
+  const [genCountdown, setGenCountdown] = useState(0); // 30s
+  const [serverAdCreation, setServerAdCreation] = useState(""); // returned from backend
 
   const productPreview = useMemo(() => (productFile ? URL.createObjectURL(productFile) : ""), [productFile]);
   const actorPreview = useMemo(() => (actorFile ? URL.createObjectURL(actorFile) : ""), [actorFile]);
-
-  useEffect(() => {
-    console.log("[AdPreparePage] params:", params);
-    console.log("[AdPreparePage] parsed:", parsed);
-    console.log("[AdPreparePage] email search param:", searchParams.get("email"));
-  }, [params, parsed, searchParams]);
 
   // If email not in URL, fetch it from backend (protected)
   useEffect(() => {
@@ -305,6 +287,8 @@ export default function AdPreparePage() {
     }
     const washed = await compressImageToMax(file, MAX_BYTES);
     setProductFile(washed);
+    setUploadedOk(false);
+    setCanGenerate(false);
   };
 
   const pickActor = async (file) => {
@@ -315,35 +299,25 @@ export default function AdPreparePage() {
     }
     const washed = await compressImageToMax(file, MAX_BYTES);
     setActorFile(washed);
+    setUploadedOk(false);
+    setCanGenerate(false);
   };
 
-  const forge = async () => {
+  // Step 1: upload + save session
+  const forgeUpload = async () => {
     try {
-      if (!productFile) {
-        toast.error("Please add a product image (Step 1).", { toastId: "need-product" });
-        return;
-      }
-      if (!actorFile) {
-        toast.error("Please add an actor image (Step 2).", { toastId: "need-actor" });
-        return;
-      }
-      if (!directions.trim()) {
-        toast.error("Please add ad directions (Step 3).", { toastId: "need-directions" });
-        return;
-      }
-      if (!actorWords.trim()) {
-        toast.error("Please add actor words (Step 4).", { toastId: "need-words" });
-        return;
-      }
+      if (!productFile) return toast.error("Please add a product image (Step 1).", { toastId: "need-product" });
+      if (!actorFile) return toast.error("Please add an actor image (Step 2).", { toastId: "need-actor" });
+      if (!directions.trim()) return toast.error("Please add ad directions (Step 3).", { toastId: "need-directions" });
+      if (!actorWords.trim()) return toast.error("Please add actor words (Step 4).", { toastId: "need-words" });
 
-      setSubmitting(true);
-      toast.info("🔥 Sending to forge...", { toastId: "forge-start" });
+      setUploading(true);
+      setUploadedOk(false);
+      setCanGenerate(false);
+      setServerAdCreation("");
 
-      console.log("[AdPreparePage] forging payload...");
-      console.log("[AdPreparePage] adprepare:", parsed.raw);
-      console.log("[AdPreparePage] email:", email);
+      toast.info("🔥 Step 1: Uploading & saving session…", { toastId: "step1-start" });
 
-      // ✅ Send as multipart/form-data
       const form = new FormData();
       form.append("adprepare", parsed.raw);
       form.append("email", email || "");
@@ -352,34 +326,105 @@ export default function AdPreparePage() {
       form.append("productImage", productFile);
       form.append("actorImage", actorFile);
 
-      // Endpoint exists (we’ll keep it) — backend can adjust to accept multipart
       const res = await callBackend.post("/web/api/day18/set-day18-data", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("[AdPreparePage] forge response:", res.data);
+      console.log("[AdPreparePage] step1 response:", res.data);
 
-      toast.success("✅ Forge accepted! Loading creation...", { toastId: "forge-ok" });
+      toast.success("✅ Step 1 complete. Preparing next step…", { toastId: "step1-ok" });
+      setUploadedOk(true);
 
-      const adcreation = makeAdCreationId();
-      const qp = new URLSearchParams();
-      if (email) qp.set("email", email);
+      // 5 second timer then enable Step 2
+      setNextCountdown(5);
+      setCanGenerate(false);
 
-      router.push(`/dashboard/day18/${parsed.raw}/${adcreation}?${qp.toString()}`);
+      const interval = setInterval(() => {
+        setNextCountdown((prev) => {
+          const next = prev - 1;
+          if (next <= 0) {
+            clearInterval(interval);
+            setCanGenerate(true);
+            toast.info("✨ Step 2 unlocked: Generate Ad", { toastId: "step2-unlocked" });
+            return 0;
+          }
+          return next;
+        });
+      }, 1000);
     } catch (err) {
-      console.log("[AdPreparePage] forge failed:", err?.response?.data || err?.message || err);
-      toast.error("❌ Forge failed. Check backend logs.", { toastId: "forge-fail" });
+      console.log("[AdPreparePage] step1 failed:", err?.response?.data || err?.message || err);
+      toast.error("❌ Step 1 failed. Check backend logs.", { toastId: "step1-fail" });
+      setUploadedOk(false);
+      setCanGenerate(false);
     } finally {
-      setSubmitting(false);
+      setUploading(false);
+    }
+  };
+
+  // Step 2: trigger backend generation (backend creates adcreation)
+  const triggerGenerate = async () => {
+    try {
+      if (!uploadedOk) {
+        toast.error("Step 1 must complete first.", { toastId: "must-step1" });
+        return;
+      }
+      if (!canGenerate) {
+        toast.info("Please wait for Step 2 to unlock…", { toastId: "wait-unlock" });
+        return;
+      }
+
+      setGenerating(true);
+      toast.info("⚙️ Step 2: Generating your ad…", { toastId: "step2-start" });
+
+      const res = await callBackend.post("/web/api/day18/generate", {
+        adprepare: parsed.raw,
+      });
+
+      console.log("[AdPreparePage] generate response:", res.data);
+
+      const adcreation = String(res?.data?.adcreation || "");
+      if (!adcreation) {
+        toast.error("Backend did not return adcreation. Check logs.", { toastId: "no-adcreation" });
+        setGenerating(false);
+        return;
+      }
+
+      setServerAdCreation(adcreation);
+
+      toast.success("✅ Generation started. Your ad is on the way…", { toastId: "step2-ok" });
+
+      // 30 second UX timer before redirect
+      setGenCountdown(30);
+
+      const interval = setInterval(() => {
+        setGenCountdown((prev) => {
+          const next = prev - 1;
+          if (next <= 0) {
+            clearInterval(interval);
+
+            const qp = new URLSearchParams();
+            if (email) qp.set("email", email);
+
+            toast.info("🚀 Redirecting to your ad page now…", { toastId: "redirecting" });
+
+            router.push(`/dashboard/day18/${parsed.raw}/${adcreation}?${qp.toString()}`);
+            return 0;
+          }
+          return next;
+        });
+      }, 1000);
+    } catch (err) {
+      console.log("[AdPreparePage] generate failed:", err?.response?.data || err?.message || err);
+      toast.error("❌ Step 2 failed. Check backend logs.", { toastId: "step2-fail" });
+    } finally {
+      setGenerating(false);
     }
   };
 
   return (
     <div className="relative">
-      {/* hero */}
       <section className="overflow-hidden rounded-3xl bg-white/5 ring-1 ring-white/10 shadow-2xl">
         <div className="relative px-6 sm:px-10 py-10 sm:py-12">
-          {/* glow */}
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full blur-3xl opacity-25 bg-orange-500" />
             <div className="absolute top-16 -left-24 h-80 w-80 rounded-full blur-3xl opacity-15 bg-red-500" />
@@ -397,9 +442,7 @@ export default function AdPreparePage() {
 
               <div className="min-w-0">
                 <div className="text-xs text-white/50">SkullFire • Day 18</div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-white">
-                  Ad Generator • Prepare (Step 1–5)
-                </h1>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-white">Ad Generator • Prepare</h1>
                 <div className="mt-1 text-xs text-white/45 break-all">
                   session: <span className="text-white/60">{parsed.raw}</span>
                 </div>
@@ -407,13 +450,11 @@ export default function AdPreparePage() {
             </div>
 
             <p className="mt-6 text-white/75 max-w-3xl leading-relaxed">
-              Upload a <span className="text-white font-medium">product image</span> and an{" "}
-              <span className="text-white font-medium">actor image</span>, then describe how the ad should
-              look and what the actor should say. Hit <span className="text-orange-200 font-semibold">Forge</span>{" "}
-              to generate your ad.
+              Step 1 uploads your images + saves the session by <span className="text-white font-medium">adprepare</span>.
+              Step 2 triggers generation and the backend returns the real{" "}
+              <span className="text-white font-medium">adcreation</span>.
             </p>
 
-            {/* steps grid */}
             <div className="mt-8 grid gap-5 lg:grid-cols-2">
               <DropZone
                 label="Step 1 — Product Image"
@@ -422,7 +463,11 @@ export default function AdPreparePage() {
                 previewUrl={productPreview}
                 inputRef={productInputRef}
                 onPick={pickProduct}
-                onClear={() => setProductFile(null)}
+                onClear={() => {
+                  setProductFile(null);
+                  setUploadedOk(false);
+                  setCanGenerate(false);
+                }}
               />
 
               <DropZone
@@ -432,21 +477,27 @@ export default function AdPreparePage() {
                 previewUrl={actorPreview}
                 inputRef={actorInputRef}
                 onPick={pickActor}
-                onClear={() => setActorFile(null)}
+                onClear={() => {
+                  setActorFile(null);
+                  setUploadedOk(false);
+                  setCanGenerate(false);
+                }}
               />
             </div>
 
             <div className="mt-6 grid gap-5 lg:grid-cols-2">
-              {/* Step 3 */}
               <div className="rounded-3xl bg-zinc-950/40 ring-1 ring-white/10 p-5">
                 <div className="text-sm font-semibold text-white">Step 3 — Ad Directions</div>
                 <div className="text-xs text-white/60 mt-1">
                   Example: “Dark background, orange glow, bold headline, product on left, actor on right.”
                 </div>
-
                 <textarea
                   value={directions}
-                  onChange={(e) => setDirections(e.target.value)}
+                  onChange={(e) => {
+                    setDirections(e.target.value);
+                    setUploadedOk(false);
+                    setCanGenerate(false);
+                  }}
                   rows={6}
                   className={[
                     "mt-4 w-full rounded-2xl px-4 py-3 text-sm",
@@ -458,16 +509,18 @@ export default function AdPreparePage() {
                 />
               </div>
 
-              {/* Step 4 */}
               <div className="rounded-3xl bg-zinc-950/40 ring-1 ring-white/10 p-5">
                 <div className="text-sm font-semibold text-white">Step 4 — Actor Script</div>
                 <div className="text-xs text-white/60 mt-1">
                   What should the actor say in the ad? Keep it short + punchy.
                 </div>
-
                 <textarea
                   value={actorWords}
-                  onChange={(e) => setActorWords(e.target.value)}
+                  onChange={(e) => {
+                    setActorWords(e.target.value);
+                    setUploadedOk(false);
+                    setCanGenerate(false);
+                  }}
                   rows={6}
                   className={[
                     "mt-4 w-full rounded-2xl px-4 py-3 text-sm",
@@ -480,31 +533,65 @@ export default function AdPreparePage() {
               </div>
             </div>
 
-            {/* Step 5 */}
-            <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            {/* STEP 1 BUTTON */}
+            <div className="mt-8 flex flex-col gap-3">
               <button
                 type="button"
-                disabled={submitting}
-                onClick={forge}
+                disabled={uploading || generating}
+                onClick={forgeUpload}
                 className={[
                   "inline-flex items-center justify-center",
                   "rounded-2xl px-6 py-3 text-sm font-semibold",
                   "bg-orange-500/20 hover:bg-orange-500/25",
                   "text-orange-200 ring-1 ring-orange-400/30",
                   "transition focus:outline-none focus:ring-2 focus:ring-orange-400/40",
-                  submitting ? "opacity-60 cursor-not-allowed" : "",
+                  uploading || generating ? "opacity-60 cursor-not-allowed" : "",
                 ].join(" ")}
               >
-                {submitting ? "Forging..." : "Step 5 — Forge Ad →"}
+                {uploading ? "Uploading..." : "Step 1 — Upload + Save Session"}
               </button>
 
-              <div className="text-xs text-white/45">
-                Next:{" "}
-                <span className="text-white/60">
-                  /dashboard/day18/[adprepare]/[adcreation]
-                </span>{" "}
-                (email in query)
-              </div>
+              {/* 5s timer UI */}
+              {uploadedOk && !canGenerate ? (
+                <div className="text-xs text-white/60">
+                  ✅ Step 1 complete. Step 2 unlocks in{" "}
+                  <span className="text-orange-200 font-semibold">{nextCountdown}s</span>…
+                </div>
+              ) : null}
+
+              {/* STEP 2 BUTTON */}
+              <button
+                type="button"
+                disabled={!canGenerate || generating || uploading}
+                onClick={triggerGenerate}
+                className={[
+                  "inline-flex items-center justify-center",
+                  "rounded-2xl px-6 py-3 text-sm font-semibold",
+                  canGenerate ? "bg-white/5 hover:bg-white/10 text-white ring-1 ring-white/15" : "bg-white/2 text-white/40 ring-1 ring-white/5",
+                  "transition focus:outline-none focus:ring-2 focus:ring-white/20",
+                  !canGenerate || generating || uploading ? "opacity-70 cursor-not-allowed" : "",
+                ].join(" ")}
+              >
+                {generating ? "Starting generation..." : "Step 2 — Generate Ad (Backend creates adcreation)"}
+              </button>
+
+              {/* 30s timer UI */}
+              {serverAdCreation && genCountdown > 0 ? (
+                <div className="rounded-2xl bg-zinc-950/40 ring-1 ring-white/10 p-4">
+                  <div className="text-sm text-white font-semibold">Your ad is being processed 🔥</div>
+                  <div className="mt-1 text-xs text-white/60">
+                    We started generation and got your <span className="text-white/80">adcreation</span>:{" "}
+                    <span className="text-orange-200">{serverAdCreation}</span>
+                  </div>
+                  <div className="mt-2 text-xs text-white/60">
+                    Redirecting to your ad page in{" "}
+                    <span className="text-orange-200 font-semibold">{genCountdown}s</span>…
+                  </div>
+                  <div className="mt-2 text-xs text-white/50">
+                    Next page: <span className="text-white/70">/dashboard/day18/{parsed.raw}/{serverAdCreation}?email=...</span>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
