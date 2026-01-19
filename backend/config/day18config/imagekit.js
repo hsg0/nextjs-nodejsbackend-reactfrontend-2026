@@ -1,3 +1,4 @@
+// backend/config/day18config/imagekit.js
 import ImageKit from "imagekit";
 
 const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
@@ -15,3 +16,5 @@ const imagekit = new ImageKit({
 });
 
 export default imagekit;
+
+
