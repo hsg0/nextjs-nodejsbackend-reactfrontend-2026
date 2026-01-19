@@ -11,9 +11,44 @@ const day18Schema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    data: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {},
+    adprepare: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    directions: {
+      type: String,
+      required: true,
+    },
+    actorWords: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      default: "uploaded",
+      index: true,
+    },
+    productImage: {
+      fileId: { type: String, required: true },
+      url: { type: String, required: true },
+      name: { type: String, required: true },
+      size: { type: Number, required: true },
+      fileType: { type: String, required: true },
+      mime: { type: String, required: true },
+    },
+    actorImage: {
+      fileId: { type: String, required: true },
+      url: { type: String, required: true },
+      name: { type: String, required: true },
+      size: { type: Number, required: true },
+      fileType: { type: String, required: true },
+      mime: { type: String, required: true },
     },
   },
   { timestamps: true }
