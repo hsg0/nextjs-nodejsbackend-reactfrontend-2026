@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import useAuthCheck from "@/checkAuth/authCheck.js";
 import { toast } from "react-toastify";
 
@@ -14,10 +14,18 @@ function ssSet(key, value) {
   }
 }
 
+
 export default function PrescriptionReqPage() {
+
   const router = useRouter();
-  const { loading } = useAuthCheck();
+
+  const { loading, user } = useAuthCheck();
+
   const params = useParams();
+  const searchParams = useSearchParams();
+
+  const emailSlug = searchParams.get("email") || user?.email || "send";
+
   const prescription = params?.prescription;
 
   const storageKey = useMemo(
@@ -109,8 +117,18 @@ export default function PrescriptionReqPage() {
 
     toast.success("Draft saved. Moving to send step…", { toastId: "draft-saved" });
 
-    // Your folder is: /prescriptionreq/[sendprescription]
-    const dest = `/dashboard/day21/${prescription}/prescriptionreq/sendprescription`;
+    // ✅ Dynamic segment value for [sendprescription]
+    function slugify(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+    
+    const sendSlug = slugify(user?.email || user?.webUserId || "sendprescription");
+    
+    const dest = `/dashboard/day21/${prescription}/prescriptionreq/${sendSlug}`;
     console.log("[PrescriptionReq] routing to:", dest);
     router.push(dest);
   };

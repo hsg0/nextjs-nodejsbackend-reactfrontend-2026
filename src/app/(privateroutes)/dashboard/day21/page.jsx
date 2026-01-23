@@ -6,20 +6,18 @@ import { toast } from "react-toastify";
 import useAuthCheck from "@/checkAuth/authCheck.js";
 
 export default function Day21EntryPage() {
+
   const router = useRouter();
   const { loading, isAuthenticated, user } = useAuthCheck();
 
   const webUserId = user?.webUserId || "";
 
   useEffect(() => {
-    console.log("[Day21 Entry] loaded");
-    console.log("[Day21 Entry] loading:", loading);
-    console.log("[Day21 Entry] isAuthenticated:", isAuthenticated);
-    console.log("[Day21 Entry] user:", user);
-    console.log("[Day21 Entry] webUserId:", webUserId);
+   console.log("[Day21 Entry] loaded");
   }, [loading, isAuthenticated, user, webUserId]);
 
   const sendEmailMailto = () => {
+    
     console.log("[Day21 Entry] Send Email clicked");
     toast.warning("⚠️ You are entering SkullFire Labs.", { toastId: "skullfire-entry" });
 
