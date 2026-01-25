@@ -13,6 +13,7 @@ import day20Router from './routes/day20routes/day20Routes.js';
 import day21Router from './routes/day21routes/day21routes.js';
 import day23Router from './routes/day23routes/day23Routes.js';
 import day24Router from './routes/day24routes/day24Routes.js';
+import day25Router from './routes/day25routes/day25Routes.js';
 // import day76AIRouter from './routes/day76routes/day76AIRoutes.js';
 // Load environment variables
 dotenv.config();
@@ -72,6 +73,7 @@ app.use('/web/api/day20', day20Router);
 app.use('/web/api/day21', day21Router);
 app.use('/web/api/day23', day23Router);
 app.use('/web/api/day24', day24Router);
+app.use('/web/api/day25', day25Router);
 // app.use('/web/api/dayAI76', day76AIRouter);
 
 app.listen(PORT, () => {
