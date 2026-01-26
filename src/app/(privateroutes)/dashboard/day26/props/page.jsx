@@ -7,19 +7,19 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import useAuthCheck from "@/checkAuth/authCheck";
 
-// const fetchPropsTest = async () => {
-//   console.log("[fetchPropsTest] GET /web/api/day25/test");
-//   const res = await axios.get("http://localhost:5020/web/api/day25/test", {
-//     withCredentials: true,
-//     timeout: 15000,
-//   });
-//   console.log("[fetchPropsTest] ✅ res.data:", res.data);
-//   return res.data;
-// };
+const fetchPropsTest = async () => {
+  console.log("[fetchPropsTest] GET /web/api/day26/test");
+  const res = await axios.get("http://localhost:5020/web/api/day26/test", {
+    withCredentials: true,
+    timeout: 15000,
+  });
+  console.log("[fetchPropsTest] ✅ res.data:", res.data);
+  return res.data;
+};
 
 const fetchUseParamsTest = async () => {
-  console.log("[fetchUseParamsTest] GET /web/api/day25/useParams");
-  const res = await axios.get("http://localhost:5020/web/api/day25/useParams", {
+  console.log("[fetchUseParamsTest] GET /web/api/day26/useParams");
+  const res = await axios.get("http://localhost:5020/web/api/day26/useParams", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -77,7 +77,7 @@ function PropsUserCard({ user }) {
   );
 }
 
-export default function Day25PropsPage() {
+export default function Day26PropsPage() {
   const router = useRouter();
   const { isAuthenticated, loading, user } = useAuthCheck();
 
@@ -92,7 +92,7 @@ export default function Day25PropsPage() {
   const [paramsErr, setParamsErr] = useState("");
 
   // ✅ Carry-over param value (this will become the URL segment)
-  const [selectedParam, setSelectedParam] = useState("sunnygill");
+  const [selectedParam, setSelectedParam] = useState("alpha");
 
   // If you want: we can auto-generate the param from server later.
   // For now: keep it simple and controlled.
@@ -105,7 +105,7 @@ export default function Day25PropsPage() {
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
-      console.log("[Day25PropsPage] ❌ not authenticated -> /login");
+      console.log("[Day26PropsPage] ❌ not authenticated -> /login");
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
@@ -121,36 +121,14 @@ export default function Day25PropsPage() {
       try {
         setPropsLoading(true);
         setPropsErr("");
-        const rawDataFromSessionStorage = sessionStorage.getItem("DAY25_PROPS_DATA");
-        if (rawDataFromSessionStorage) {
-          const cachedData = JSON.parse(rawDataFromSessionStorage);
-          console.log(
-            "[Day25PropsPage] ♻️ using cached /test data from sessionStorage:",
-            cachedData
-          );
-          setPropsData(cachedData);
-          toast.info("♻️ Loaded /test data from sessionStorage cache");
-        } else {
-          const fallback = {
-            message: "Props test successful (cached fallback)",
-            props: "This is a demo prop value from sessionStorage",
-            user: {
-              webUserId: user?.webUserId || "cached-user-id",
-              username: user?.username || "cached_user",
-              email: user?.email || "cached@example.com",
-            },
-          };
-          sessionStorage.setItem("DAY25_PROPS_DATA", JSON.stringify(fallback));
-          setPropsData(fallback);
-          toast.success("✅ Seeded props cache");
-        }
+        const resData = await fetchPropsTest();
+        if (!alive) return;
+        setPropsData(resData);
+        toast.success("✅ Props endpoint loaded");
       } catch (err) {
         const msg =
           err?.response?.data?.message || err?.message || "Failed to load props test";
-        console.log(
-          "[Day25PropsPage] ❌ /test error:",
-          err?.response?.data || err?.message || err
-        );
+        console.log("[Day26PropsPage] ❌ /test error:", err?.response?.data || err?.message || err);
         if (!alive) return;
         setPropsErr(msg);
         toast.error(msg);
@@ -159,7 +137,6 @@ export default function Day25PropsPage() {
         setPropsLoading(false);
       }
     };
-        
 
     const runParams = async () => {
       if (loading) return;
@@ -176,7 +153,7 @@ export default function Day25PropsPage() {
         const msg =
           err?.response?.data?.message || err?.message || "Failed to load useParams test";
         console.log(
-          "[Day25PropsPage] ❌ /useParams error:",
+          "[Day26PropsPage] ❌ /useParams error:",
           err?.response?.data || err?.message || err
         );
         if (!alive) return;
@@ -208,7 +185,7 @@ export default function Day25PropsPage() {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-5xl mx-auto space-y-5">
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
-          <h1 className="text-2xl font-extrabold">Day 25 — Props Page</h1>
+          <h1 className="text-2xl font-extrabold">Day 26 — Props Page</h1>
           <div className="mt-2 text-white/70 text-sm">
             Signed in as{" "}
             <span className="text-white font-bold">
@@ -222,7 +199,7 @@ export default function Day25PropsPage() {
         </div>
 
         {/* ✅ Endpoint 1 */}
-        <Card title="1) Props Controller" subtitle="GET /web/api/day25/test">
+        <Card title="1) Props Controller" subtitle="GET /web/api/day26/test">
           {propsLoading ? (
             <div className="text-white/70">Loading…</div>
           ) : propsErr ? (
@@ -243,7 +220,7 @@ export default function Day25PropsPage() {
         </Card>
 
         {/* ✅ Endpoint 2 */}
-        <Card title="2) useParams Controller (server response)" subtitle="GET /web/api/day25/useParams">
+        <Card title="2) useParams Controller (server response)" subtitle="GET /web/api/day26/useParams">
           {paramsLoading ? (
             <div className="text-white/70">Loading…</div>
           ) : paramsErr ? (
@@ -275,7 +252,7 @@ export default function Day25PropsPage() {
               <input
                 value={selectedParam}
                 onChange={(e) => {
-                  console.log("[Day25PropsPage] selectedParam changed:", e.target.value);
+                  console.log("[Day26PropsPage] selectedParam changed:", e.target.value);
                   setSelectedParam(e.target.value);
                 }}
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-white outline-none"
@@ -284,7 +261,7 @@ export default function Day25PropsPage() {
 
               <div className="mt-2 text-xs text-white/50">
                 Next URL will be:
-                <span className="text-white/70"> /dashboard/day25/props/</span>
+                <span className="text-white/70"> /dashboard/day26/props/</span>
                 <span className="text-purple-300 font-bold">{selectedParam || "—"}</span>
               </div>
             </div>
@@ -295,8 +272,8 @@ export default function Day25PropsPage() {
               <button
                 disabled={!canGoNext}
                 onClick={() => {
-                  console.log("[Day25PropsPage] going to useParams page with:", selectedParam);
-                  router.push(`/dashboard/day25/props/${selectedParam}`);
+                  console.log("[Day26PropsPage] going to useParams page with:", selectedParam);
+                  router.push(`/dashboard/day26/props/${selectedParam}`);
                 }}
                 className={`mt-2 rounded-xl border border-white/10 px-4 py-2 ${
                   canGoNext ? "bg-black/40 hover:bg-black/60" : "bg-black/20 opacity-60"
@@ -313,13 +290,13 @@ export default function Day25PropsPage() {
         </Card>
 
         <div className="text-xs text-white/60 flex flex-wrap gap-4">
-          <Link className="underline text-white/80" href="/dashboard/day25">
-            Back to Day25 Home
+          <Link className="underline text-white/80" href="/dashboard/day26">
+            Back to Day26 Home
           </Link>
 
           <Link
             className="underline text-white/80"
-            href={`/dashboard/day25/props/${selectedParam}/beta?query=hello&level=5`}
+            href={`/dashboard/day26/props/${selectedParam}/beta?query=hello&level=5`}
           >
             Skip ahead: useSearchParams demo
           </Link>

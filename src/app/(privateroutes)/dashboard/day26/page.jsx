@@ -38,8 +38,8 @@ function PropsUserCard({ userObj }) {
 
 // ✅ Each axios call is its own separate function
 const fetchPropsTest = async () => {
-  console.log("[fetchPropsTest] GET /web/api/day25/test");
-  const res = await axios.get("http://localhost:5020/web/api/day25/test", {
+  console.log("[fetchPropsTest] GET /web/api/day26/test");
+  const res = await axios.get("http://localhost:5020/web/api/day26/test", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -48,8 +48,8 @@ const fetchPropsTest = async () => {
 };
 
 const fetchUseParamsTest = async () => {
-  console.log("[fetchUseParamsTest] GET /web/api/day25/useParams");
-  const res = await axios.get("http://localhost:5020/web/api/day25/useParams", {
+  console.log("[fetchUseParamsTest] GET /web/api/day26/useParams");
+  const res = await axios.get("http://localhost:5020/web/api/day26/useParams", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -58,9 +58,9 @@ const fetchUseParamsTest = async () => {
 };
 
 const fetchUseSearchParamsTest = async () => {
-  console.log("[fetchUseSearchParamsTest] GET /web/api/day25/useSearchParams");
+  console.log("[fetchUseSearchParamsTest] GET /web/api/day26/useSearchParams");
   const res = await axios.get(
-    "http://localhost:5020/web/api/day25/useSearchParams",
+    "http://localhost:5020/web/api/day26/useSearchParams",
     {
       withCredentials: true,
       timeout: 15000,
@@ -71,8 +71,8 @@ const fetchUseSearchParamsTest = async () => {
 };
 
 const fetchUseRouterTest = async () => {
-  console.log("[fetchUseRouterTest] GET /web/api/day25/useRouter");
-  const res = await axios.get("http://localhost:5020/web/api/day25/useRouter", {
+  console.log("[fetchUseRouterTest] GET /web/api/day26/useRouter");
+  const res = await axios.get("http://localhost:5020/web/api/day26/useRouter", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -81,8 +81,8 @@ const fetchUseRouterTest = async () => {
 };
 
 const fetchLinkingTest = async () => {
-  console.log("[fetchLinkingTest] GET /web/api/day25/linking");
-  const res = await axios.get("http://localhost:5020/web/api/day25/linking", {
+  console.log("[fetchLinkingTest] GET /web/api/day26/linking");
+  const res = await axios.get("http://localhost:5020/web/api/day26/linking", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -112,11 +112,7 @@ function JsonBox({ data }) {
 
 export default function Page25() {
   const router = useRouter();
-  const auth = useAuthCheck();
-
-const isAuthenticated = auth.isAuthenticated;
-const loading = auth.loading;
-const user = auth.user;
+  const { isAuthenticated, loading, user } = useAuthCheck();
 
   // ✅ each response has its own state
   const [propsData, setPropsData] = useState(null);
@@ -338,7 +334,7 @@ const user = auth.user;
       <div className="max-w-5xl mx-auto space-y-5">
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
           <h1 className="text-2xl font-extrabold">
-            Day 25: Auto-Fetch Controller Tests
+            Day 26: Auto-Fetch Controller Tests
           </h1>
           <div className="mt-2 text-white/70 text-sm">
             Signed in as{" "}
@@ -353,27 +349,13 @@ const user = auth.user;
         </div>
 
         {/* ✅ ONLY THIS SECTION WAS UPDATED */}
-        <Section title="1) Props Controller" subtitle="GET /web/api/day25/test">
+        <Section title="1) Props Controller" subtitle="GET /web/api/day26/test">
           <button
             onClick={() => {
-              console.log(
-                "[Props Section] saving propsData to sessionStorage + opening page",
-              );
-
-              if (!propsData) {
-                toast.error("No propsData to send yet.");
-                return;
-              }
-              if (propsData){
-                toast.success("Props data saving to sessionStorage for next page.");
-              }
-
-              sessionStorage.setItem(
-                "DAY25_PROPS_DATA",
-                JSON.stringify(propsData),
-              );
-              router.push("/dashboard/day25/props");
+              console.log("[Props Section] open /dashboard/day26/props");
+              router.push("/dashboard/day26/props");
             }}
+            className="rounded-xl border border-white/10 bg-black/40 px-4 py-2 hover:bg-black/60"
           >
             Open Props Page →
           </button>
@@ -403,7 +385,7 @@ const user = auth.user;
 
         <Section
           title="2) useParams Controller"
-          subtitle="GET /web/api/day25/useParams"
+          subtitle="GET /web/api/day26/useParams"
         >
           {paramsLoading ? (
             <div className="text-white/70">Loading...</div>
@@ -420,7 +402,7 @@ const user = auth.user;
 
         <Section
           title="3) useSearchParams Controller"
-          subtitle="GET /web/api/day25/useSearchParams"
+          subtitle="GET /web/api/day26/useSearchParams"
         >
           {searchParamsLoading ? (
             <div className="text-white/70">Loading...</div>
@@ -437,7 +419,7 @@ const user = auth.user;
 
         <Section
           title="4) useRouter Controller + Router Demo"
-          subtitle="GET /web/api/day25/useRouter (plus router.push('/login') demo button)"
+          subtitle="GET /web/api/day26/useRouter (plus router.push('/login') demo button)"
         >
           <button
             onClick={() => {
@@ -466,7 +448,7 @@ const user = auth.user;
 
         <Section
           title="5) Linking Controller + Link Demo"
-          subtitle="GET /web/api/day25/linking (plus <Link /> demo)"
+          subtitle="GET /web/api/day26/linking (plus <Link /> demo)"
         >
           <Link
             href="/login"
