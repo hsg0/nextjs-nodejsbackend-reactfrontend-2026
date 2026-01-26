@@ -9,8 +9,8 @@ import useAuthCheck from "@/checkAuth/authCheck";
 
 /* ------------------ backend calls ------------------ */
 const fetchUseParamsTest = async () => {
-  console.log("[fetchUseParamsTest] GET /web/api/day25/useParams");
-  const res = await axios.get("http://localhost:5020/web/api/day25/useParams", {
+  console.log("[fetchUseParamsTest] GET /web/api/day26/useParams");
+  const res = await axios.get("http://localhost:5020/web/api/day26/useParams", {
     withCredentials: true,
     timeout: 15000,
   });
@@ -19,9 +19,9 @@ const fetchUseParamsTest = async () => {
 };
 
 const fetchUseSearchParamsTest = async () => {
-  console.log("[fetchUseSearchParamsTest] GET /web/api/day25/useSearchParams");
+  console.log("[fetchUseSearchParamsTest] GET /web/api/day26/useSearchParams");
   const res = await axios.get(
-    "http://localhost:5020/web/api/day25/useSearchParams",
+    "http://localhost:5020/web/api/day26/useSearchParams",
     {
       withCredentials: true,
       timeout: 15000,
@@ -53,7 +53,7 @@ function Card({ title, subtitle, children }) {
   );
 }
 
-export default function Day25UseParamsPage() {
+export default function Day26UseParamsPage() {
   const router = useRouter();
   const params = useParams();
 
@@ -63,7 +63,7 @@ export default function Day25UseParamsPage() {
   const { isAuthenticated, loading, user } = useAuthCheck();
 
   // ✅ you prepare the NEXT route segment here (this becomes [usesearchparams])
-  const [usesearchparamsValue, setUsesearchparamsValue] = useState("isOMEGA");
+  const [usesearchparamsValue, setUsesearchparamsValue] = useState("beta");
 
   // ✅ server response: /useParams
   const [serverParamsData, setServerParamsData] = useState(null);
@@ -76,7 +76,7 @@ export default function Day25UseParamsPage() {
   const [serverSearchErr, setServerSearchErr] = useState("");
 
   const nextUrl = useMemo(() => {
-    const base = `/dashboard/day25/props/${useparamsValue}/${usesearchparamsValue}`;
+    const base = `/dashboard/day26/props/${useparamsValue}/${usesearchparamsValue}`;
     const qp = `?query=hello&level=5`;
     return base + qp;
   }, [useparamsValue, usesearchparamsValue]);
@@ -90,15 +90,15 @@ export default function Day25UseParamsPage() {
     if (loading) return;
 
     if (!isAuthenticated) {
-      console.log("[Day25UseParamsPage] ❌ not authenticated -> /login");
+      console.log("[Day26UseParamsPage] ❌ not authenticated -> /login");
       router.replace("/login");
     }
   }, [loading, isAuthenticated, router]);
 
   // ✅ log param
   useEffect(() => {
-    console.log("[Day25UseParamsPage] params:", params);
-    console.log("[Day25UseParamsPage] useparamsValue:", useparamsValue);
+    console.log("[Day26UseParamsPage] params:", params);
+    console.log("[Day26UseParamsPage] useparamsValue:", useparamsValue);
     if (useparamsValue) toast.info(`useParams() got: ${useparamsValue}`);
   }, [params, useparamsValue]);
 
@@ -123,7 +123,7 @@ export default function Day25UseParamsPage() {
         const msg =
           err?.response?.data?.message || err?.message || "Failed to load server useParams";
         console.log(
-          "[Day25UseParamsPage] ❌ server /useParams error:",
+          "[Day26UseParamsPage] ❌ server /useParams error:",
           err?.response?.data || err?.message || err
         );
         if (!alive) return;
@@ -163,7 +163,7 @@ export default function Day25UseParamsPage() {
           err?.message ||
           "Failed to load server useSearchParams";
         console.log(
-          "[Day25UseParamsPage] ❌ server /useSearchParams error:",
+          "[Day26UseParamsPage] ❌ server /useSearchParams error:",
           err?.response?.data || err?.message || err
         );
         if (!alive) return;
@@ -192,7 +192,7 @@ export default function Day25UseParamsPage() {
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-5xl mx-auto space-y-5">
         <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
-          <h1 className="text-2xl font-extrabold">Day 25 — useParams()</h1>
+          <h1 className="text-2xl font-extrabold">Day 26 — useParams()</h1>
           <div className="mt-2 text-white/70 text-sm">
             Signed in as{" "}
             <span className="text-white font-bold">
@@ -226,7 +226,7 @@ export default function Day25UseParamsPage() {
               <input
                 value={usesearchparamsValue}
                 onChange={(e) => {
-                  console.log("[Day25UseParamsPage] usesearchparamsValue changed:", e.target.value);
+                  console.log("[Day26UseParamsPage] usesearchparamsValue changed:", e.target.value);
                   setUsesearchparamsValue(e.target.value);
                 }}
                 className="mt-2 w-full rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-white outline-none"
@@ -242,8 +242,8 @@ export default function Day25UseParamsPage() {
                 disabled={!canGoNext}
                 onClick={() => {
                   const serverMsg = encodeURIComponent(serverSearchData?.searchParams || "");
-                  const finalUrl = `/dashboard/day25/props/${useparamsValue}/${usesearchparamsValue}?query=hello&level=5&serverMsg=${serverMsg}`;
-                  console.log("[Day25UseParamsPage] going to next page:", finalUrl);
+                  const finalUrl = `/dashboard/day26/props/${useparamsValue}/${usesearchparamsValue}?query=hello&level=5&serverMsg=${serverMsg}`;
+                  console.log("[Day26UseParamsPage] going to next page:", finalUrl);
                   router.push(finalUrl);
                 }}
                 className={`mt-3 rounded-xl border border-white/10 px-4 py-2 ${
@@ -257,7 +257,7 @@ export default function Day25UseParamsPage() {
         </Card>
 
         {/* ✅ server response: /useParams */}
-        <Card title="2) Server Response (GET /web/api/day25/useParams)">
+        <Card title="2) Server Response (GET /web/api/day26/useParams)">
           {serverParamsLoading ? (
             <div className="text-white/70">Loading…</div>
           ) : serverParamsErr ? (
@@ -277,7 +277,7 @@ export default function Day25UseParamsPage() {
         </Card>
 
         {/* ✅ server response: /useSearchParams */}
-        <Card title="3) Server Response (GET /web/api/day25/useSearchParams)">
+        <Card title="3) Server Response (GET /web/api/day26/useSearchParams)">
           {serverSearchLoading ? (
             <div className="text-white/70">Loading…</div>
           ) : serverSearchErr ? (
@@ -299,7 +299,7 @@ export default function Day25UseParamsPage() {
 
         <div className="text-xs text-white/60 flex flex-wrap gap-3">
           <Link
-            href="/dashboard/day25/props"
+            href="/dashboard/day26/props"
             className="rounded-xl border border-white/10 bg-black/40 px-4 py-2 hover:bg-black/60"
           >
             Back to Props
@@ -307,7 +307,7 @@ export default function Day25UseParamsPage() {
 
           <button
             onClick={() => {
-              console.log("[Day25UseParamsPage] router.back()");
+              console.log("[Day26UseParamsPage] router.back()");
               router.back();
             }}
             className="rounded-xl border border-white/10 bg-black/40 px-4 py-2 hover:bg-black/60"
