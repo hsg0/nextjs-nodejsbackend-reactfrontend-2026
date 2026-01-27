@@ -15,6 +15,7 @@ import day23Router from './routes/day23routes/day23Routes.js';
 import day24Router from './routes/day24routes/day24Routes.js';
 import day25Router from './routes/day25routes/day25Routes.js';
 import day26Router from './routes/day26routes/day26Routes.js';
+import day27Router from './routes/day27routes/day27Routes.js';
 // import day76AIRouter from './routes/day76routes/day76AIRoutes.js';
 // Load environment variables
 dotenv.config();
@@ -54,7 +55,7 @@ app.use(
     })
     );
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 app.use(cookieParser());
 
@@ -76,6 +77,7 @@ app.use('/web/api/day23', day23Router);
 app.use('/web/api/day24', day24Router);
 app.use('/web/api/day25', day25Router);
 app.use('/web/api/day26', day26Router);
+app.use('/web/api/day27', day27Router); 
 // app.use('/web/api/dayAI76', day76AIRouter);
 
 app.listen(PORT, () => {
